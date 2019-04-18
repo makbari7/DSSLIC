@@ -87,7 +87,12 @@ function [DSSILC_mse, DSSILC_psnr, DSSILC_mssim, DSSILC_bpp] = DSSILC_Coding(num
         
         %get residual, map to [0, 255]
         resi = org - map_rec;
-        resi = round((resi + 255) / 2);  % shift then divide by 2 to deal with neg values
+        %resi = round((resi + 255) / 2);  % shift then divide by 2 to deal with neg values
+        %%% min-max normalization
+        resMin=min(min(min(resi)));
+        resMax=max(max(max(resi)));
+        resi = ((resi-resMin)/(resMax-resMin))*255;
+
         resi = uint8(resi);
 
         for factor=1:numel(DSSILC_factors)            
@@ -99,7 +104,8 @@ function [DSSILC_mse, DSSILC_psnr, DSSILC_mssim, DSSILC_bpp] = DSSILC_Coding(num
                 res_rec=Res_Decoding;
                 res_rec = double(res_rec);
                 %inverse mapping to negative range
-                res_rec = 2 * res_rec - 255;
+                %res_rec = 2 * res_rec - 255;
+                res_rec = res_rec/255*(resMax-resMin)+resMin;
 
                 img_rec = img_rec + res_rec;                
             end
